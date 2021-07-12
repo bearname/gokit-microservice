@@ -1,0 +1,224 @@
+openapi: 3.0.0
+info:
+  title: Demo product catalog API
+  description: |
+    This is simple client API
+  version: 1.0.0
+servers:
+  - url: http://hostname/api/v1/catalog
+tags:
+  - name: products
+    description: Operations about products
+paths:
+  /products:
+    post:
+      tags: [products]
+      description: Create product
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductParams'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [products]
+      description: List products
+      operationId: listProducts
+      parameters:
+        - name: page_num
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: price
+          in: query
+          required: false
+          description: Comma separated min and max value
+          schema:
+            type: string
+          example: "price=100.50,300.50"
+        - name: color
+          in: query
+          required: false
+          description: Comma separated list of values
+          schema:
+            type: string
+          example: "color=pink,purple,red"
+        - name: material
+          in: query
+          required: false
+          description: Comma separated list of values
+          schema:
+            type: string
+          example: "material=steel,cotton"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsPage'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /products/{id}:
+    get:
+      tags: [products]
+      description: Get product
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ProductParams:
+      type: object
+      required:
+        - sku
+        - title
+        - price
+        - available_qty
+        - image
+        - color
+        - material
+      properties:
+        sku:
+          type: string
+        title:
+          type: string
+        price:
+          type: string
+        available_qty:
+          type: integer
+        image:
+          $ref: '#/components/schemas/Image'
+        color:
+          type: string
+        material:
+          type: string
+    ProductsPage:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        count:
+          type: integer
+          minimum: 0
+    Product:
+      type: object
+      required:
+        - id
+        - sku
+        - title
+        - price
+        - available_qty
+        - image
+        - color
+        - material
+      properties:
+        id:
+          type: string
+        sku:
+          type: string
+        title:
+          type: string
+        price:
+          type: string
+        available_qty:
+          type: integer
+        image:
+          $ref: '#/components/schemas/Image'
+        color:
+          type: string
+        material:
+          type: string
+    Image:
+      type: object
+      required:
+        - width
+        - height
+        - url
+      properties:
+        width:
+          type: integer
+          minimum: 1
+        height:
+          type: integer
+          minimum: 1
+        url:
+          type: string
+          format: uri
+    Error:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
